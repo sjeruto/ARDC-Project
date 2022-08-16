@@ -2,12 +2,18 @@ from scrappers.LobbyistNswScrapper import *
 
 import json
 scrapper = LobbyistNswScrapper()
-lobbyists = scrapper.get_lobbyists()
+lobbyists = scrapper.scrape()
 
-scrapper.populate_details(lobbyists[0])
-
+print('Clients:')
 for client in lobbyists[0].clients:
     print(f"{json.dumps(client.__dict__)}")
 
+print('Employees:')
+for employee in lobbyists[0].employees:
+    print(f"{json.dumps(employee.__dict__)}")
+
+print('Owners:')
+for owner in lobbyists[0].owners:
+    print(f"{json.dumps(owner.__dict__)}")
 
 scrapper.close()
