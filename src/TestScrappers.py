@@ -1,8 +1,13 @@
 from scrappers.LobbyistNswScrapper import *
 
 import json
-scrapper = LobbyistNswScrapper()
-lobbyists = scrapper.scrape()
+scrapper = LobbyistNswScrapper(persist_to_db=False)
+lobbyists = scrapper.get_lobbyists()
+# lobbyists = scrapper.scrape()
+
+print('Lobbyists:')
+for lobbyist in lobbyists[0:5]:
+    print(f"{json.dumps(lobbyist.as_dict())}")
 
 print('Clients:')
 for client in lobbyists[0].clients:

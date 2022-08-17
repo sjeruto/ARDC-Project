@@ -3,7 +3,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 
-class LobbyistNsw:
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import String, Boolean, Integer
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists
+from sqlalchemy.orm import Session
+
+Base = declarative_base()
+engine = create_engine("sqlite:///data.db", future=True)
+
+class LobbyistNsw(Base):
+    __tablename__ = "lobbyist_nsw"
     def __init__(self, name, abn, trading_name, on_watch_list, status, details_anchor):
         self.name = name
         self.abn = abn
@@ -13,7 +26,25 @@ class LobbyistNsw:
         self.details_anchor = details_anchor
         self._clients = []
         self._employees = []
+        self._owners = []
     
+    # ORM Database mappings
+    id = Column(Integer, primary_key=True)
+    name = Column(String(1000), nullable=False)
+    abn = Column(Integer, nullable=False)
+    trading_name = Column(String(1000), nullable=False)
+    on_watch_list = Column(Boolean(), nullable=False)
+    status = Column(String(100), nullable=False)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "abn": self.abn,
+            "trading_name": self.trading_name ,
+            "on_watch_list": self.on_watch_list ,
+            "status": self.status 
+        }
+
     @property
     def clients(self):
         return self._clients
@@ -60,8 +91,18 @@ class LobbyistNsw_Owner:
         self.active = active
         self.date_added = date_added
 
+
+
 class LobbyistNswScrapper:
-    def __init__(self):
+    def __init__(self, persist_to_db = True, max_retry = 5):
+        self.persist_to_db = persist_to_db
+
+        if self.persist_to_db:
+            self.db_session = Session(engine)
+            if database_exists(engine.url) == False:
+                Base.metadata.create_all(engine)
+
+        self.max_retry = max_retry
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(options = chrome_options)
@@ -74,10 +115,10 @@ class LobbyistNswScrapper:
 
     def get_lobbyists(self):
         lobbyists = []
-        dataTableElement = self.driver.find_element(By.CLASS_NAME, 'dataTable')
+        dataTableElement = self.driver.find_element(By.CSS_SELECTOR, '#AC .dataTable')
         rows = dataTableElement.find_elements(By.CSS_SELECTOR, 'tbody tr[role="row"]')
         for row in rows:
-            columns = row.find_elements(By.CSS_SELECTOR, "*")
+            columns = row.find_elements(By.CSS_SELECTOR, "td")
             anchor = columns[0].find_element(By.TAG_NAME, 'a')
             lobbyist = LobbyistNsw(
                 name = columns[0].text,
@@ -88,16 +129,34 @@ class LobbyistNswScrapper:
                 details_anchor = anchor
             )
             lobbyists.append(lobbyist)
+
+        if self.persist_to_db:
+            self.db_session.add_all(lobbyists)
+
         return lobbyists
 
     def populate_details(self, lobbyist: LobbyistNsw):
+
         lobbyist.clients = []
-        lobbyist.details_anchor.click()
+
+        tries = 0
+        while(tries < self.max_retry):
+            try:
+                lobbyist.details_anchor.click()
+                break
+            except:
+                print("Exception caught on click event, reissuing close command...")
+                self.driver.execute_script('$("#lobby-details-modal .modal-header button.close").click()')
+                sleep(5)
+                tries = tries + 1
+                if tries == self.max_retry:
+                    raise
+                
         sleep(3)
         modalBody = self.driver.find_element(By.CLASS_NAME, 'modal-body')
-        self.populate_clients(lobbyist, modalBody)
-        self.populate_employees(lobbyist, modalBody)
-        self.populate_owners(lobbyist, modalBody)
+        self.retry(self.populate_clients, lobbyist, modalBody)
+        self.retry(self.populate_employees, lobbyist, modalBody)
+        self.retry(self.populate_owners, lobbyist, modalBody)
 
         # for some reason invoking a click from selenium directly throws a ElementNotInteractableException
         # exception, the work around is to execute javascript to click on the element.
@@ -151,6 +210,20 @@ class LobbyistNswScrapper:
             if client.countries == '&nbsp;':
                 client.countries = ''
             lobbyist.clients.append(client)
+
+    def retry(self, func, lobbyist: LobbyistNsw, modalBody):
+        tries = 0
+        while(tries < self.max_retry):
+            try:
+                func(lobbyist, modalBody)
+                break
+            except:
+                tries = tries + 1
+                if tries == self.max_retry:
+                    raise
+                print("Exception caught, retrying...")
+                sleep(5)
+                
 
     def close(self):
         self.driver.quit()
