@@ -8,6 +8,7 @@ from sqlalchemy_utils import database_exists
 from sqlalchemy.orm import Session
 
 Base = declarative_base()
+engine = create_engine("sqlite:///data.db", future=True)
 
 class LobbyistNsw(Base):
     __tablename__ = "lobbyist_nsw"
@@ -96,7 +97,6 @@ class LobbyistNsw_Client(Base):
     date_added = Column(String(100), nullable=False)
 
     # lobbyist = relationship("LobbyistNsw", back_populates="clients")
-    
 
 class LobbyistNsw_Employee(Base):
     __tablename__ = "lobbyist_nsw_employee"
@@ -130,3 +130,27 @@ class LobbyistNsw_Owner(Base):
     active = Column(Boolean(), nullable=False)
 
     # lobbyist = relationship("LobbyistNsw", back_populates="owners")
+
+class LobbyistQld(Base):
+    __tablename__ = "lobbyist_qld"
+    def __init__(self, name, abn, trading_name, last_updated, details_anchor):
+        self.name = name
+        self.abn = abn
+        self.trading_name = trading_name
+        self.last_updated = last_updated
+        self.details_anchor = details_anchor
+
+    # ORM Database column mappings
+    id = Column(Integer, primary_key=True)
+    name = Column(String(1000), nullable=False)
+    abn = Column(Integer, nullable=False)
+    trading_name = Column(String(1000), nullable=False)
+    last_updated = Column(String(100), nullable=False)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "abn": self.abn,
+            "trading_name": self.trading_name ,
+            "last_updated": self.last_updated
+        }

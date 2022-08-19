@@ -4,7 +4,6 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 from model.models import *
 
-engine = create_engine("sqlite:///data.db", future=True)
 class LobbyistNswScrapper:
     def __init__(self, persist_to_db = True, max_retry = 5):
         self.persist_to_db = persist_to_db
