@@ -1,7 +1,7 @@
 from scrappers.LobbyistNswScrapper import *
 
 import json
-scrapper = LobbyistNswScrapper(persist_to_db=True)
+scrapper = LobbyistNswScrapper(persist_to_db=False)
 # lobbyists = scrapper.get_lobbyists()
 lobbyists = scrapper.scrape()
 
