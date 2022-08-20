@@ -133,12 +133,16 @@ class LobbyistNsw_Owner(Base):
 
 class LobbyistQld(Base):
     __tablename__ = "lobbyist_qld"
-    def __init__(self, name, abn, trading_name, last_updated, details_anchor):
+    def __init__(self, name, abn, trading_name, last_updated, row_identifier):
         self.name = name
         self.abn = abn
         self.trading_name = trading_name
         self.last_updated = last_updated
-        self.details_anchor = details_anchor
+        self.row_identifier = row_identifier
+
+        self._clients = []
+        self._employees = []
+        self._owners = []
 
     # ORM Database column mappings
     id = Column(Integer, primary_key=True)
@@ -147,10 +151,99 @@ class LobbyistQld(Base):
     trading_name = Column(String(1000), nullable=False)
     last_updated = Column(String(100), nullable=False)
 
+    @property
+    def clients(self):
+        return self._clients
+
+    @clients.setter
+    def clients(self, value):
+        self._clients = value
+
+    @property
+    def employees(self):
+        return self._employees
+
+    @employees.setter
+    def employees(self, value):
+        self._employees = value
+    
+    @property
+    def owners(self):
+        return self._owners
+
+    @owners.setter
+    def owners(self, value):
+        self._owners = value
+
     def as_dict(self):
         return {
             "name": self.name,
             "abn": self.abn,
             "trading_name": self.trading_name ,
             "last_updated": self.last_updated
+        }
+
+class LobbyistQld_Owner(Base):
+    __tablename__ = "lobbyist_qld_owner"
+    def __init__(self, name):
+        self.name = name
+    
+    # ORM Database column mappings
+    id = Column(Integer, primary_key=True)
+    lobbyist_qld_id = Column(Integer, ForeignKey("lobbyist_qld.id"))
+    name = Column(String(1000), nullable=False)
+
+    def as_dict(self):
+        return {
+            "name": self.name
+        }
+
+class LobbyistQld_Employee(Base):
+    __tablename__ = "lobbyist_qld_employee"
+    def __init__(self, name, position, former_senior_gov_rep, cessation_date, associations):
+        self.name = name
+        self.position = position
+        self.former_senior_gov_rep = former_senior_gov_rep
+        self.cessation_date = cessation_date
+        self.associations = associations
+    
+    # ORM Database column mappings
+    id = Column(Integer, primary_key=True)
+    lobbyist_qld_id = Column(Integer, ForeignKey("lobbyist_qld.id"))
+    name = Column(String(1000), nullable=False)
+    position = Column(String(1000), nullable=False)
+    former_senior_gov_rep = Column(Boolean(), nullable=False)
+    cessation_date = Column(String(100), nullable=False)
+    associations = Column(String(1000), nullable=False)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "position": self.position,
+            "former_senior_gov_rep": self.former_senior_gov_rep,
+            "cessation_date": self.cessation_date,
+            "associations": self.associations
+        }
+
+class LobbyistQld_Client(Base):
+    __tablename__ = "lobbyist_qld_client"
+    def __init__(self, name, paid_services_provided, client_added, made_previous):
+        self.name = name
+        self.paid_services_provided = paid_services_provided
+        self.client_added = client_added
+        self.made_previous = made_previous
+
+    id = Column(Integer, primary_key=True)
+    lobbyist_qld_id = Column(Integer, ForeignKey("lobbyist_qld.id"))
+    name = Column(String(1000), nullable=False)
+    paid_services_provided = Column(Boolean(), nullable=False)
+    client_added = Column(String(100), nullable=False)
+    made_previous = Column(String(100), nullable=False)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "paid_services_provided": self.paid_services_provided,
+            "client_added": self.client_added,
+            "made_previous": self.made_previous
         }

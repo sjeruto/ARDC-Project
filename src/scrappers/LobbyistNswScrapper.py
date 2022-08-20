@@ -5,7 +5,7 @@ from time import sleep
 from model.models import *
 
 class LobbyistNswScrapper:
-    def __init__(self, persist_to_db = True, max_retry = 5):
+    def __init__(self, persist_to_db = True, max_retry = 5, run_headless = True):
         self.persist_to_db = persist_to_db
 
         if self.persist_to_db:
@@ -15,7 +15,8 @@ class LobbyistNswScrapper:
 
         self.max_retry = max_retry
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        if run_headless:
+            chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(options = chrome_options)
         self.driver.get("https://lobbyists.elections.nsw.gov.au/whoisontheregister")
 
@@ -49,9 +50,6 @@ class LobbyistNswScrapper:
         return lobbyists
 
     def populate_details(self, lobbyist: LobbyistNsw):
-
-        lobbyist.clients = []
-
         tries = 0
         while(tries < self.max_retry):
             try:
@@ -118,6 +116,7 @@ class LobbyistNswScrapper:
             lobbyist.employees.append(employee)
 
     def populate_clients(self, lobbyist: LobbyistNsw, modalBody):
+        lobbyist.clients = []
         rows = modalBody.find_elements(By.CSS_SELECTOR, '#CLI .dataTable tbody tr')
         for row in rows:
             columns = row.find_elements(By.CSS_SELECTOR, 'td')
