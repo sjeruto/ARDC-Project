@@ -30,7 +30,7 @@ def test_qld_scrapper():
     scrapper = LobbyistQldScrapper(persist_to_db=True)
     # lobbyists = scrapper.get_lobbyists()
     lobbyists = scrapper.scrape()
-    scrapper.populate_details(lobbyists[3])
+    # scrapper.populate_details(lobbyists[3])
 
     print('Lobbyists:')
     for lobbyist in lobbyists[0:5]:

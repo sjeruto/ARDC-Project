@@ -10,8 +10,7 @@ class LobbyistNswScrapper:
 
         if self.persist_to_db:
             self.db_session = Session(engine)
-            if database_exists(engine.url) == False:
-                Base.metadata.create_all(engine)
+            Base.metadata.create_all(engine)
 
         self.max_retry = max_retry
         chrome_options = Options()
