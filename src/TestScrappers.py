@@ -49,8 +49,8 @@ def test_qld_scrapper():
         print(f"{json.dumps(owner.as_dict())}")
 
 def test_sa_scrapper():
-    scrapper = LobbyistSaScrapper(persist_to_db=False)
-    scrapper.download_data_file()
+    scrapper = LobbyistSaScrapper(persist_to_db=True)
+    scrapper.scrape()
 
 # test_nsw_scrapper()
 # test_qld_scrapper()

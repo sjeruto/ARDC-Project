@@ -3,3 +3,4 @@ src/secrets/secrets.py
 *.db
 *.pyc
 *.xls*
+processed/
