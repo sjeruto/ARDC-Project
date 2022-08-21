@@ -1,7 +1,7 @@
 from scrappers.LobbyistNswScrapper import *
-import json
-
 from scrappers.LobbyistQldScrapper import *
+from scrappers.LobbistSaScrapper import *
+import json
 
 def test_nsw_scrapper():
     scrapper = LobbyistNswScrapper(persist_to_db=False)
@@ -48,4 +48,10 @@ def test_qld_scrapper():
     for owner in lobbyists[3].owners:
         print(f"{json.dumps(owner.as_dict())}")
 
-test_qld_scrapper()
+def test_sa_scrapper():
+    scrapper = LobbyistSaScrapper(persist_to_db=False)
+    scrapper.download_data_file()
+
+# test_nsw_scrapper()
+# test_qld_scrapper()
+test_sa_scrapper()
