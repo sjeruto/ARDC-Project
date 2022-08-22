@@ -1,6 +1,7 @@
 from scrappers.LobbyistNswScrapper import *
 from scrappers.LobbyistQldScrapper import *
 from scrappers.LobbistSaScrapper import *
+from scrappers.LobbyistFederalScrapper import *
 import json
 
 def test_nsw_scrapper():
@@ -52,6 +53,11 @@ def test_sa_scrapper():
     scrapper = LobbyistSaScrapper(persist_to_db=True)
     scrapper.scrape()
 
+def test_fed_scrapper():
+    scrapper = LobbyistFederalScrapper(persist_to_db=True)
+    scrapper.scrape()
+
 # test_nsw_scrapper()
 # test_qld_scrapper()
-test_sa_scrapper()
+# test_sa_scrapper()
+test_fed_scrapper()

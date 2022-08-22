@@ -41,10 +41,11 @@ class LobbyistSaScrapper:
             self.process_data_file()
 
     def download_data_file(self):
+        sleep(3)
         export_button = self.driver.find_element(By.CSS_SELECTOR, '.pi-external-link')
         export_button.click()
         print('waiting for download...')
-        if os.path.isfile('Lobbyist Export.xls') == False:
+        while os.path.isfile('Lobbyist Export.xls') == False:
             sleep(5)
         
         # We could potentially detected the file downlaod by analysing the performance logs
@@ -62,23 +63,23 @@ class LobbyistSaScrapper:
         lobbyists_df.columns = lobbyists_df.columns.str.replace(')', '')
         lobbyists_df.columns = lobbyists_df.columns.str.lower()
         lobbyists_df.abn = pd.to_numeric(lobbyists_df.abn.str.replace(' ', ''))
-        lobbyists_df.batch_id = self.batch_id
+        lobbyists_df["batch_id"] = self.batch_id.__str__()
         lobbyists_df.to_sql('lobbyist_sa', cnx, index=False, if_exists='append')
 
         employees_df = pd.read_excel('Lobbyist Export.xls', 'Employees')
         employees_df.columns = employees_df.columns.str.replace(' ', '_')
         employees_df.columns = employees_df.columns.str.lower()
-        employees_df.lobbyist_abn = pd.to_numeric(employees_df.lobbyist_abn.str.replace(' ', ''))
+        employees_df["lobbyist_abn"] = pd.to_numeric(employees_df.lobbyist_abn.str.replace(' ', ''))
         employees_df = employees_df[[c for c in employees_df.columns if c not in ['lobbyist_business_name', 'lobbyist_trading_name']]]
-        employees_df.batch_id = self.batch_id
+        employees_df["batch_id"] = self.batch_id.__str__()
         employees_df.to_sql('lobbyist_sa_employee', cnx, index=False, if_exists='append')
 
         clients_df = pd.read_excel('Lobbyist Export.xls', 'Clients')
         clients_df.columns = clients_df.columns.str.replace(' ', '_')
         clients_df.columns = clients_df.columns.str.lower()
-        clients_df.lobbyist_abn = pd.to_numeric(clients_df.lobbyist_abn.str.replace(' ', ''))
+        clients_df["lobbyist_abn"] = pd.to_numeric(clients_df.lobbyist_abn.str.replace(' ', ''))
         clients_df = clients_df[[c for c in clients_df.columns if c not in ['lobbyist_business_name', 'lobbyist_trading_name']]]
-        clients_df.batch_id = self.batch_id
+        clients_df["batch_id"] = self.batch_id.__str__()
         clients_df.to_sql('lobbyist_sa_client', cnx, index=False, if_exists='append')
 
-        os.rename('Lobbyist Export.xls', f'processed/sa_lobbyist_export_batch_{self.batch_id}.xls')
+        os.rename('Lobbyist Export.xls', f'processed/sa_lobbyist_export_batch_{self.batch_id.__str__()}.xls')
