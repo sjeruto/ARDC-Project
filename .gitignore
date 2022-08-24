@@ -4,3 +4,4 @@ src/secrets/secrets.py
 *.pyc
 *.xls*
 processed/
+*.csv
