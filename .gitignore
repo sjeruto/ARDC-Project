@@ -5,3 +5,5 @@ src/secrets/secrets.py
 *.xls*
 processed/
 *.csv
+*.pdf
+NSW_pdfs/
