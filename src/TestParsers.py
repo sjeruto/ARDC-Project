@@ -1,4 +1,4 @@
-from diary_parsers.NswParser import MinisterialDiaryParser, MinisterialDiaryEntry
+from diary_parsers.DiaryParser import MinisterialDiaryParser, MinisterialDiaryEntry
 
 def extract_pdf_data(folder, jurisdiction):
     parser = MinisterialDiaryParser(folder, jurisdiction)
