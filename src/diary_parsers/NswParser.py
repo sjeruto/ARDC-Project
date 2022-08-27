@@ -3,19 +3,31 @@ import pandas as pd
 import numpy as np
 import glob
 import ntpath
+import regex as re
 
-class NswMinisterialDiaryEntry:
-    def __init__(self, date, portfolio, organisation_individual, purpose_of_meeting):
-        self.date = date
-        self.portfolio = portfolio
-        self.organisation_individual = organisation_individual
-        self.purpose_of_meeting = purpose_of_meeting
+from model.models import *
 
-class NswParser:
-    def __init__(self, directory_path):
+# class NswMinisterialDiaryEntry:
+#     __tablename__ = "ministerial_diary_nsw"
+#     def __init__(self, date, portfolio, organisation_individual, purpose_of_meeting):
+#         self.date = date
+#         self.portfolio = portfolio
+#         self.organisation_individual = organisation_individual
+#         self.purpose_of_meeting = purpose_of_meeting
+
+    
+
+class MinisterialDiaryParser:
+    def __init__(self, directory_path, jurisdiction, persist_to_db = True):
         self.entries = []
         self.directory_path = directory_path
         self.errors = []
+        self.jurisdiction = jurisdiction
+        self.persist_to_db = persist_to_db
+
+        if self.persist_to_db:
+            self.db_session = Session(engine)
+            Base.metadata.create_all(engine)
     
     def extract_data(self):
         pdf_files = glob.glob(f"{self.directory_path}/*.pdf")
@@ -24,14 +36,18 @@ class NswParser:
             print(f'parsing {file_name}...')
             portfolio = self.get_portfolio(file_name)
             try:
-                self.extract_tables(file_path, portfolio)
+                entries = self.extract_tables(file_path, portfolio, file_name)
+                if self.persist_to_db:
+                    self.db_session.add_all(entries)
+                    self.db_session.commit()
+                self.entries = self.entries + entries
             except Exception as ex:
-                self.errors.append(f'{file_name}, {str(ex)}')
+                self.errors.append(f'{file_name}, {str(ex)}\n')
                 continue
 
 
     def get_portfolio(self, file_name):
-        file_name_parts = file_name.split("-")
+        file_name_parts = re.split("-|_", file_name)
         months =  ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         portfolio = ""
         for prt in file_name_parts:
@@ -41,9 +57,11 @@ class NswParser:
                 portfolio += prt +" "
         return portfolio
 
-    def extract_tables(self, file, portfolio):
+    def extract_tables(self, file, portfolio, file_name):
         tables = camelot.read_pdf(file, pages='all')
-
+        next_purpose = ""
+        next_date = ""
+        entries = []
         for table in tables:
             for idx, row in table.df.iterrows():
                 if row[0] == "":
@@ -62,10 +80,13 @@ class NswParser:
                     for org in orgs:
                         org = org.replace("¬†", " ")
 
-                        entry = NswMinisterialDiaryEntry(
+                        entry = MinisterialDiaryEntry(
                             date = date,
                             portfolio = portfolio,
                             organisation_individual = org,
-                            purpose_of_meeting = purpose
+                            purpose_of_meeting = purpose,
+                            jurisdiction = self.jurisdiction,
+                            import_file_name = file_name
                         )
-                        self.entries.append(entry)
+                        entries.append(entry)
+        return entries

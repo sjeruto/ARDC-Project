@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session
 Base = declarative_base()
 engine = create_engine("sqlite:///data.db", future=True)
 
+############################################################################
+#   Lobbyist Registers NSW
+############################################################################
+
 class LobbyistNsw(Base):
     __tablename__ = "lobbyist_nsw"
     def __init__(self, name, abn, trading_name, on_watch_list, status, details_anchor):
@@ -131,6 +135,10 @@ class LobbyistNsw_Owner(Base):
 
     # lobbyist = relationship("LobbyistNsw", back_populates="owners")
 
+############################################################################
+#   Lobbyist Registers QLD
+############################################################################
+
 class LobbyistQld(Base):
     __tablename__ = "lobbyist_qld"
     def __init__(self, name, abn, trading_name, last_updated, row_identifier):
@@ -247,3 +255,26 @@ class LobbyistQld_Client(Base):
             "client_added": self.client_added,
             "made_previous": self.made_previous
         }
+
+############################################################################
+#   Ministerial Diaries
+############################################################################
+
+class MinisterialDiaryEntry(Base):
+    __tablename__ = "ministerial_diary_nsw"
+    def __init__(self, date, portfolio, organisation_individual, purpose_of_meeting, jurisdiction, import_file_name):
+        self.date = date
+        self.portfolio = portfolio
+        self.organisation_individual = organisation_individual
+        self.purpose_of_meeting = purpose_of_meeting
+        self.jurisdiction = jurisdiction
+        self.import_file_name = import_file_name
+
+
+    id = Column(Integer, primary_key=True)
+    date = Column(String(100), nullable = False)
+    portfolio = Column(String(1000), nullable = False)
+    organisation_individual = Column(String(1000), nullable = False)
+    purpose_of_meeting = Column(String(1000), nullable = False)
+    jurisdiction = Column(String(50), nullable = False)
+    import_file_name = Column(String(256), nullable = False)

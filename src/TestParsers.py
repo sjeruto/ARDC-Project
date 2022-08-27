@@ -1,9 +1,11 @@
-from diary_parsers.NswParser import NswParser, NswMinisterialDiaryEntry
+from diary_parsers.NswParser import MinisterialDiaryParser, MinisterialDiaryEntry
 
-def test_nsw_perser():
-    parser = NswParser('NSW_pdfs')
+def extract_pdf_data(folder, jurisdiction):
+    parser = MinisterialDiaryParser(folder, jurisdiction)
     data = parser.extract_data()
-    for error in parser.errors:
-        print(error)
+    if len(parser.errors) > 0:
+        with open('ministerial_diary_errors.log', 'a') as f:
+            f.writelines(parser.errors)
 
-test_nsw_perser()
+extract_pdf_data('NSW_pdfs', 'NSW')
+extract_pdf_data('QLD_pdfs', 'QLD_pdfs')
