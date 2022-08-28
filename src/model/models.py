@@ -261,7 +261,7 @@ class LobbyistQld_Client(Base):
 ############################################################################
 
 class MinisterialDiaryEntry(Base):
-    __tablename__ = "ministerial_diary_nsw"
+    __tablename__ = "ministerial_diary"
     def __init__(self, date, portfolio, organisation_individual, purpose_of_meeting, jurisdiction, import_file_name):
         self.date = date
         self.portfolio = portfolio
