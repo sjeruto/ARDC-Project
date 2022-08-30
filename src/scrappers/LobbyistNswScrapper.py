@@ -63,9 +63,19 @@ class LobbyistNswScrapper:
                     raise
                 
         sleep(3)
-        modalBody = self.driver.find_element(By.CLASS_NAME, 'modal-body')
-        lobbyist.status_note = modalBody.find_element(By.CSS_SELECTOR, '#DET tbody tr:nth-child(5) td').text
-        lobbyist.last_updated = modalBody.find_element(By.CSS_SELECTOR, '#DET tbody tr:nth-child(3) td').text
+        tries = 0
+        while(tries < self.max_retry):
+            try:
+                modalBody = self.driver.find_element(By.CLASS_NAME, 'modal-body')
+                lobbyist.status_note = modalBody.find_element(By.CSS_SELECTOR, '#DET tbody tr:nth-child(5) td').text
+                lobbyist.last_updated = modalBody.find_element(By.CSS_SELECTOR, '#DET tbody tr:nth-child(3) td').text
+                break;
+            except:
+                print("Exception caught, retrying to get modalBody...")
+                sleep(2)
+                tries = tries + 1
+                if tries == self.max_retry:
+                    raise
 
         if self.persist_to_db:
             self.db_session.add(lobbyist)
@@ -100,6 +110,9 @@ class LobbyistNswScrapper:
             )
             lobbyist.owners.append(owner)
 
+            if self.persist_to_db:
+                owner.lobbyist_nsw_id = lobbyist.id
+
     def populate_employees(self, lobbyist: LobbyistNsw, modalBody):
         lobbyist.employees = []
         rows = modalBody.find_elements(By.CSS_SELECTOR, '#EMP .dataTable tbody tr')
@@ -113,6 +126,9 @@ class LobbyistNswScrapper:
                 date_added= columns[3].get_attribute('innerHTML')
             )
             lobbyist.employees.append(employee)
+        
+            if self.persist_to_db:
+                employee.lobbyist_nsw_id = lobbyist.id
 
     def populate_clients(self, lobbyist: LobbyistNsw, modalBody):
         lobbyist.clients = []
