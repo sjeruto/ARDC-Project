@@ -1,4 +1,5 @@
 from scrappers.DonationsNswScraper import *
+from scrappers.DonationsNtScraper import *
 
 def nsw_scraper():
     scraper = DonationsNswScraper()
@@ -8,4 +9,11 @@ def nsw_scraper():
 
     scraper.browserClose()
 
-nsw_scraper()
+def nt_scraper():
+    scraper = DonationsNtScraper()
+    scraper.retrieveIndividualDonors()
+
+
+#nsw_scraper()
+
+nt_scraper()
