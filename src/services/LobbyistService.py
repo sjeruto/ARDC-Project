@@ -1,12 +1,8 @@
 import pandas as pd
-class LobbyistService():
+from src.services.Cleaners import *
+class LobbyistDataService():
     def __init__(self, db_connection):
         self.db_connection = db_connection
-
-    def clean_name(self, df, column_name):
-        df[f"{column_name}_clean"] = df[column_name].str.lower()
-        df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace('  ', ' ')
-        df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(r'[^\w\s]+', '')
 
     # returns a dataframe of all lobbyist employees
     def get_all_lobbyist_employees(self):
@@ -77,7 +73,7 @@ class LobbyistService():
         group by le.abn, le.lobbyist_name, le.title
         """
         df = pd.read_sql(sql, self.db_connection)
-        self.clean_name(df, 'lobbyist_name')
+        clean_person_name(df, 'lobbyist_name')
         return df
 
     # returns a dataframe with all the uniqe lobbyist abn's
@@ -185,6 +181,8 @@ class LobbyistService():
         select lc.abn lobbyist_abn, lc.name from lobbyist_clients lc
         group by lc.abn, lc.name
         """
+        df = pd.read_sql(sql, self.db_connection)
+        clean_business_name(df, 'name')
         return pd.read_sql(sql, self.db_connection)
 
     
