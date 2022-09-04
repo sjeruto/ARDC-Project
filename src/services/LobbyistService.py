@@ -14,33 +14,20 @@ class LobbyistDataService():
                 from lobbyist_federal lf
                 where lf.abn is not null
                 union
-                select lf.abn  
-                from lobbyist_federal lf
-                where lf.abn is not null
-                union
                 select lnsw.abn 
                 from lobbyist_nsw lnsw
                 where lnsw.abn is not null
-                union
-                select lnsw.abn 
-                from lobbyist_nsw lnsw
-                where lnsw.abn is not null
+                    and trim(lnsw.abn) != ''
                 union
                 select lq.abn 
                 from lobbyist_qld lq
                 where lq.abn is not null
-                union
-                select lq.abn 
-                from lobbyist_qld lq
-                where lq.abn is not null
+                    and trim(lq.abn) != ''
                 union
                 select ls.abn 
                 from lobbyist_sa ls 
                 where ls.abn is not null
-                union
-                select ls.abn 
-                from lobbyist_sa ls 
-                where ls.abn is not null
+                    and trim(ls.abn) != ''
             ) t
             group by t.abn
         ), lobbyist_employees as (
@@ -74,6 +61,7 @@ class LobbyistDataService():
         """
         df = pd.read_sql(sql, self.db_connection)
         clean_person_name(df, 'lobbyist_name')
+        clean_abn(df, 'lobbyist_abn')
         return df
 
     # returns a dataframe with all the uniqe lobbyist abn's
@@ -85,33 +73,20 @@ class LobbyistDataService():
             from lobbyist_federal lf
             where lf.abn is not null
             union
-            select lf.abn  
-            from lobbyist_federal lf
-            where lf.abn is not null
-            union
             select lnsw.abn 
             from lobbyist_nsw lnsw
             where lnsw.abn is not null
-            union
-            select lnsw.abn 
-            from lobbyist_nsw lnsw
-            where lnsw.abn is not null
+                and trim(lnsw.abn) != ''
             union
             select lq.abn 
             from lobbyist_qld lq
             where lq.abn is not null
-            union
-            select lq.abn 
-            from lobbyist_qld lq
-            where lq.abn is not null
+                and trim(lq.abn) != ''
             union
             select ls.abn 
             from lobbyist_sa ls 
             where ls.abn is not null
-            union
-            select ls.abn 
-            from lobbyist_sa ls 
-            where ls.abn is not null
+                and trim(ls.abn) != ''
         ) t
         group by t.abn
         """
@@ -127,33 +102,20 @@ class LobbyistDataService():
                 from lobbyist_federal lf
                 where lf.abn is not null
                 union
-                select lf.abn  
-                from lobbyist_federal lf
-                where lf.abn is not null
-                union
                 select lnsw.abn 
                 from lobbyist_nsw lnsw
                 where lnsw.abn is not null
-                union
-                select lnsw.abn 
-                from lobbyist_nsw lnsw
-                where lnsw.abn is not null
+                    and trim(lnsw.abn) != ''
                 union
                 select lq.abn 
                 from lobbyist_qld lq
                 where lq.abn is not null
-                union
-                select lq.abn 
-                from lobbyist_qld lq
-                where lq.abn is not null
+                    and trim(lq.abn) != ''
                 union
                 select ls.abn 
                 from lobbyist_sa ls 
                 where ls.abn is not null
-                union
-                select ls.abn 
-                from lobbyist_sa ls 
-                where ls.abn is not null
+                    and trim(ls.abn) != ''
             ) t
             group by t.abn
         ), lobbyist_clients as (
@@ -183,7 +145,8 @@ class LobbyistDataService():
         """
         df = pd.read_sql(sql, self.db_connection)
         clean_business_name(df, 'name')
-        return pd.read_sql(sql, self.db_connection)
+        clean_abn(df, 'lobbyist_abn')
+        return df
 
     
 
