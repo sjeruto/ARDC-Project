@@ -25,7 +25,7 @@ mining_data_df = pd.read_csv('NSW_Mining_data.csv')
 clean_business_name(mining_data_df, 'company')
 
 class Searcher:
-    def __init__(self, employees_df, mining_data_df, clients_df):
+    def __init__(self, employees_df, mining_data_df, clients_df, diaries_df):
         self.employee_associations = []
         self.client_associations = []
         self.mining_company_associations = []
@@ -36,6 +36,7 @@ class Searcher:
         self.is_client_mining_company = np.vectorize(self._is_client_mining_company)
         self.mining_company_names = []
         self.link_to_mining_company = np.vectorize(self._link_to_mining_company)
+        self.diaries_df = diaries_df
 
     ##############################################################
     #       Mining Companies
@@ -93,7 +94,7 @@ class Searcher:
         
         mining_company_associations_df = pd.DataFrame(self.mining_company_associations)
         mining_company_associations_df = mining_company_associations_df[mining_company_associations_df['match'] == True]
-        return mining_company_associations_df
+        return mining_company_associations_df.merge(self.diaries_df[['id', 'portfolio_clean']], left_on = 'ministerial_diary_id', right_on = 'id')
 
 
     ##############################################################
@@ -123,12 +124,12 @@ class Searcher:
             local_employees_df
             , left_on = 'lobbyist_name'
             , right_on = 'lobbyist_name_clean'
-        )
+        ).merge(self.diaries_df[['id', 'portfolio_clean']], left_on = 'ministerial_diary_id', right_on = 'id')
         return result_df
     
 
     
-search = Searcher(all_lobbyist_employees_df, mining_data_df, all_lobbyist_clients_df)
+search = Searcher(all_lobbyist_employees_df, mining_data_df, all_lobbyist_clients_df, diaries_df)
 # search.link_to_lobbyist_employee_name(diaries_df['organisation_individual_clean'], diaries_df['id'])
 # print(search.employee_associations)
 search.link_to_mining_company(diaries_df['organisation_individual_clean'], diaries_df['id'])
