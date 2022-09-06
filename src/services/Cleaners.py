@@ -20,6 +20,7 @@ def clean_business_name(df, column_name):
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.strip()
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(' +', ' ', regex = True)
 
+
 def clean_portfolio_name(df):
         remove_phrase = [
             'jan', 'feb', 'mar', 'apr', 'may', 'jun', 
@@ -32,6 +33,7 @@ def clean_portfolio_name(df):
             df['portfolio_clean'] = df['portfolio_clean'].str.replace(r'\b' + phrase + r'\b', '', regex = True)
         
         df['portfolio_clean'] = df['portfolio_clean'].str.replace(' +', ' ', regex = True)
+        df['portfolio_clean'] = df['portfolio_clean'].str.replace('new south wales', 'nsw', regex = False)
         df['portfolio_clean'] = df['portfolio_clean'].str.strip()
 
 def clean_abn(df, column_name):
