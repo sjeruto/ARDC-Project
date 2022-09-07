@@ -11,7 +11,8 @@ def nsw_scraper():
 
 def nt_scraper():
     scraper = DonationsNtScraper()
-    scraper.retrieveIndividualDonors()
+    scraper.retrieveDonations_DonorAnnualReturns()
+    scraper.retrieveDonations_PoliticalPartiesAnnualReturns()
 
 
 #nsw_scraper()
