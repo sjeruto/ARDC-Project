@@ -35,7 +35,7 @@ def clean_portfolio_name(df):
         df['portfolio_clean'] = df['portfolio_clean'].str.replace(' +', ' ', regex = True)
         df['portfolio_clean'] = df['portfolio_clean'].str.replace('new south wales', 'nsw', regex = False)
         df['portfolio_clean'] = df['portfolio_clean'].str.strip()
-        df.loc[df['portfolio_clean'].str in ['minister for industry resources and energy', 'minister for industry resources energy']] = 'minister for resources energy'
+        df.loc[df['portfolio_clean'].isin(['minister for industry resources and energy', 'minister for industry resources energy'])] = 'minister for resources energy'
 
 def clean_abn(df, column_name):
     print('cleaning abn')
