@@ -67,30 +67,37 @@ class LobbyistDataService():
     # returns a dataframe with all the uniqe lobbyist abn's
     def get_unique_lobbyist_abns(self):
         sql = """
-        select t.abn 
+        select t.abn
+            , case 
+                    when max(t.trading_name) is null or max(t.trading_name) = '' 
+                    then max(t.legal_name) 
+                    else max(t.trading_name)
+            end lobbyist_org_name
         from (
-            select lf.abn
+            select lf.abn, lf.trading_name, lf.legal_name
             from lobbyist_federal lf
             where lf.abn is not null
             union
-            select lnsw.abn 
+            select lnsw.abn, lnsw.trading_name, lnsw.name  
             from lobbyist_nsw lnsw
             where lnsw.abn is not null
                 and trim(lnsw.abn) != ''
             union
-            select lq.abn 
+            select lq.abn, lq.trading_name, lq.name
             from lobbyist_qld lq
             where lq.abn is not null
                 and trim(lq.abn) != ''
             union
-            select ls.abn 
+            select ls.abn, ls.trading_name, ls.business_name
             from lobbyist_sa ls 
             where ls.abn is not null
                 and trim(ls.abn) != ''
         ) t
         group by t.abn
         """
-        return pd.read_sql(sql, self.db_connection)
+        df = pd.read_sql(sql, self.db_connection)
+        clean_abn(df, 'abn')
+        return df
 
     # returns a dataframe with all lobbyist clients
     def get_all_lobbyist_clients(self):
