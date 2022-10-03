@@ -38,7 +38,6 @@ def clean_portfolio_name(df):
         df.loc[df['portfolio_clean'].isin(['minister for industry resources and energy', 'minister for industry resources energy'])] = 'minister for resources energy'
 
 def clean_abn(df, column_name):
-    print('cleaning abn')
     df[f'{column_name}_clean'] = df[column_name].astype(str)
     df[f'{column_name}_clean'] = df[f'{column_name}_clean'].str.replace('ABN', '')
     df[f'{column_name}_clean'] = df[f'{column_name}_clean'].str.replace('ACN', '')
