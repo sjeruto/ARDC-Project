@@ -8,3 +8,4 @@ processed/
 *.pdf
 NSW_pdfs/
 *.log
+.DS_store
