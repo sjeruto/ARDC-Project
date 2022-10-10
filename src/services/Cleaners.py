@@ -2,13 +2,18 @@
 import pandas as pd
 def clean_person_name(df, column_name):
         df[f"{column_name}_clean"] = df[column_name].str.lower()
+        # replace punctuation and non work characters with a space
         df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(r'[^\w\s]+', '', regex = True)
+        # strip trailing and leading white space
         df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.strip()
+        # replace multiple consecutive spaces with a single space
         df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(' +', ' ', regex = True)
 
 def clean_business_name(df, column_name):
     df[f"{column_name}_clean"] = df[column_name].str.lower()
+    # remove any text surrounded by brackets
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(r'\(.*\)', ' ', regex = True)
+    # remove the following phrases and patterns
     remove_phrase = [
         ('pty', False), ('ltd', False), ('proprietary', False), ('limited', False), ('company', False), 
         (r'\.', True), ('no1', False), (r'\&amp;', True), ('incorporated', False)]
@@ -16,8 +21,11 @@ def clean_business_name(df, column_name):
     for phrase in remove_phrase:
         df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(phrase[0], '', regex=phrase[1])
 
+    # replace punctuation and non work characters with a space
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(r'[^\w\s]+', ' ', regex = True)
+    # strip trailing and leading white space
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.strip()
+    # replace multiple consecutive spaces with a single space
     df[f"{column_name}_clean"] = df[f"{column_name}_clean"].str.replace(' +', ' ', regex = True)
 
 
@@ -38,7 +46,6 @@ def clean_portfolio_name(df):
         df.loc[df['portfolio_clean'].isin(['minister for industry resources and energy', 'minister for industry resources energy'])] = 'minister for resources energy'
 
 def clean_abn(df, column_name):
-    print('cleaning abn')
     df[f'{column_name}_clean'] = df[column_name].astype(str)
     df[f'{column_name}_clean'] = df[f'{column_name}_clean'].str.replace('ABN', '')
     df[f'{column_name}_clean'] = df[f'{column_name}_clean'].str.replace('ACN', '')

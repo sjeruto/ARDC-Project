@@ -172,6 +172,7 @@ class LobbyistDataService():
         """
         df = pd.read_sql(sql, self.db_connection)
         clean_abn(df, 'abn')
+        clean_business_name(df, 'lobbyist_org_name')
         return df
 
     # returns a dataframe with all lobbyist clients
