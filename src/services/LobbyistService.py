@@ -231,5 +231,40 @@ class LobbyistDataService():
         clean_abn(df, 'lobbyist_abn')
         return df
 
+
+
+    # returns a dataframe of unique federal lobbyist employees with information of if they 
+    # had worked as a govt representative
+    def get_unique_federal_lobbyist_employees(self):
+        sql = """
+        with lobbyist_abns as (
+            select t.abn 
+            from (
+                select lf.abn
+                from lobbyist_federal lf
+                where lf.abn is not null
+            ) t
+            group by t.abn
+        ), lobbyist_employees as (
+            select abns.abn, lfe.lobbyists_name lobbyist_name, lfe.job_title title, lfe.former_govt_representative, 
+			lfe.previous_position
+            from lobbyist_abns abns
+                inner join lobbyist_federal lf2 
+                    on lf2.abn = abns.abn
+                    and lf2.abn is not null
+                inner join lobbyist_federal_employee lfe 
+                    on lfe.organisations_abn is not null
+                    and lfe.organisations_abn = abns.abn
+        )
+        select le.abn lobbyist_abn, le.lobbyist_name, le.former_govt_representative, le.previous_position
+		from lobbyist_employees le
+        group by le.abn, le.lobbyist_name
+        """
+
+        df = pd.read_sql(sql, self.db_connection)
+        clean_person_name(df, 'lobbyist_name')
+        clean_abn(df, 'lobbyist_abn')
+        return df
+
     
 
