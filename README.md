@@ -1,8 +1,8 @@
+# Tracking Transparency- ARDC Project
+This is a repository for ilab2 group project which is an exploratory research on the influence of lobbyist organisations in policy making in Australia. The aim of the project is to link different datasets together.
 
-This is a repository for ilab2 group project which is an exploratory research on the influence of lobbyist organisations in policy making in Australia.
-
-
-As part of the project, data was scraped from various websites. The scrapers were limited to NSW, SA, Queensland and Federal state and include;
+## Project Description
+The repository contaains working web scrapers collected from various states (NSW, SA, Queensland and Federal state). These are 
 1. LinkedIn Scraper
 2. Political donations scraper
 3. Lobbyist registers scrapers
