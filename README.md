@@ -1,4 +1,4 @@
- ARDC-Project
+
 This is a repository for ilab2 group project which is an exploratory research on the influence of lobbyist organisations in policy making in Australia.
 
 
