@@ -1,31 +1,10 @@
-import os
-import sys
 import pandas as pd
-module_path = os.path.abspath(os.path.join('..'))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-import sqlite3
-cnx = sqlite3.connect('data.db')
 import numpy as np
 import regex as re
-
-from src.services.MinisterialDiaryService import *
-
-from src.services.LobbyistService import LobbyistDataService
-lobbyistDataService = LobbyistDataService(cnx)
-all_lobbyist_employees_df = lobbyistDataService.get_all_lobbyist_employees()
-all_lobbyist_clients_df = lobbyistDataService.get_all_lobbyist_clients()
-
-ministerDataService = MinisterialDiaryDataService(cnx)
-diaries_df = ministerDataService.get_diary_entries(state_filter = "NSW")
-
 from src.services.Cleaners import *
-mining_data_df = pd.read_csv('NSW_Mining_data.csv')
-clean_business_name(mining_data_df, 'company')
 
 class Searcher:
-    def __init__(self, employees_df, mining_data_df, clients_df, diaries_df):
+    def __init__(self, employees_df, mining_data_df, clients_df, diaries_df, unique_lobbyist_orgs_df):
         self.employee_associations = []
         self.client_associations = []
         self.mining_company_associations = []
@@ -37,6 +16,7 @@ class Searcher:
         self.mining_company_names = []
         self.link_to_mining_company = np.vectorize(self._link_to_mining_company)
         self.diaries_df = diaries_df
+        self.unique_lobbyist_orgs_df = unique_lobbyist_orgs_df
 
     ##############################################################
     #       Mining Companies
@@ -148,7 +128,7 @@ class Searcher:
         return result_df
 
     def get_employees_linked_to_diaries(self):
-        search.link_to_lobbyist_employee_name(diaries_df['organisation_individual_clean'], diaries_df['id'])
+        self.link_to_lobbyist_employee_name(self.diaries_df['organisation_individual_clean'], self.diaries_df['id'])
         associated = self.get_associated_employees_df()
         associated = associated.merge(self.unique_lobbyist_orgs_df, left_on = 'lobbyist_abn_clean', right_on = 'abn_clean')[[
             'ministerial_diary_id', 'lobbyist_name_clean', 'title', 'portfolio_clean', 'lobbyist_org_name', 'lobbyist_abn_clean', 'date']].drop_duplicates()
@@ -156,8 +136,7 @@ class Searcher:
 
     def get_mining_companies_linked_to_diaries_via_lobbyists(self):
         associated = self.get_employees_linked_to_diaries()
-        self.unique_lobbyist_orgs_df = lobbyistDataService.get_unique_lobbyist_abns()
-        mining_company_associations = search.get_client_associations_df()
+        mining_company_associations = self.get_client_associations_df()
         mining_company_associations = mining_company_associations.merge(self.unique_lobbyist_orgs_df, left_on = 'lobbyist_abn_clean', right_on = 'abn_clean')[[
             'client_name', 'mining_company_name', 'name', 'lobbyist_abn_clean' #, 'lobbyist_org_name'
             ]].drop_duplicates()
@@ -168,12 +147,3 @@ class Searcher:
         self.link_to_mining_company(self.diaries_df['organisation_individual_clean'], self.diaries_df['id'])
         mining_associations_df = self.get_mining_company_associations_df()
         return mining_associations_df
-    
-
-    
-search = Searcher(all_lobbyist_employees_df, mining_data_df, all_lobbyist_clients_df, diaries_df)
-# search.link_to_lobbyist_employee_name(diaries_df['organisation_individual_clean'], diaries_df['id'])
-# print(search.employee_associations)
-search.link_to_mining_company(diaries_df['organisation_individual_clean'], diaries_df['id'])
-mining_associations_df = search.get_mining_company_associations_df()
-print(mining_associations_df)
