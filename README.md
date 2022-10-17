@@ -141,3 +141,50 @@ mining_companies_associated_with_diaries_via_lobbyists = search.get_mining_compa
 # gets a dataframe of mining companies joined to ministerial diaries directly.
 mining_companies_associated_with_diaries = search.get_mining_companies_linked_to_diaries()
 ```
+
+ 
+
+## LinkedIn scraper
+The LinkedIn scraper takes an input of the lobbyist employees' name, organisation and linkedin profile urls and scrapes those profiles and persists the data into the database
+#### Instructions to run the LinkedIn scraper
+- Locate the ProfileUrls.xlsx file in the root directory and open it
+- Insert the lobbyist employees' name, organisation name and the linkedin profile url
+- Ensure that none of the cells in the excel file is empty
+- Open the terminal in the root directory of the project
+- Run the following command:
+    - ```python3 -m src.linkedin_scraper.LinkedInScraperUsingProfileUrls```
+- Once the program has finished running,
+    - open the employees_experience.csv file to view all the scraped data
+    - the data can also be viewed in the database by opening the data.db file
+
+#### Changing the credentials of the LinkedIn user with which the data is scraped
+- Navigate to the Variables.py in the /src/linkedin_scraper/ directory
+- Open the file and enter the credentials of the new user in the following variables
+    ```python
+    my_username = "tsim12345679@gmail.com"
+    my_password = "tsim2022."
+    ```
+- Finally, save the Variables.py file
+
+
+#### Adding keywords with which the scraper looks for government experience
+- Navigate to the Variables.py in the /src/linkedin_scraper/ directory
+- Open the file and add keywords to list of keywords in the following variable:
+    ```python
+    gov_keywords
+    ```
+- Finally, save the Variables.py file
+
+**Note** - For Mac users, the url format for the ChromeDriver installer has changed (as at 17th October 2022). As a result, the ChromeDriver installer for latest stable updates do not work. A fix has already been implemented but not released yet. For now, it can be fixed by changing few lines of code in the webdriver_manager module by following the instructions below:
+- Navigate to /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/webdriver_manager/drivers/chrome.py file 
+- Change the following bit of code on lines 31-32 from
+    ```python
+    if is_arch(os_type):
+        return f"{os_type.replace('_m1', '')}_m1"
+    ```
+    to
+    ```python
+    if is_arch(os_type):
+        return "mac_arm64"
+    ```
+    Source: https://github.com/SergeyPirogov/webdriver_manager/pull/445
