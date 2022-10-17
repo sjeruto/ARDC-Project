@@ -10,7 +10,7 @@ class GoogleSearchForLinkedInUrls:
 
     def googleQuery(self):
             # Making the google query
-            sleep(60)
+            sleep(40)
             self.driver.get('https://www.google.com/')
             search_bar = self.driver.find_element(By.NAME, 'q')
             self.query = 'site:linkedin.com/in/ AND ("'+ self.name_search + '" OR "' + self.company_search + '")'
@@ -31,5 +31,6 @@ class GoogleSearchForLinkedInUrls:
             if profile_urls:
                 first_profile_per_page.append(profile_urls[0])
                 print(first_profile_per_page)
-            return first_profile_per_page
+                return first_profile_per_page[0]
+            return None
             

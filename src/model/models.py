@@ -278,3 +278,86 @@ class MinisterialDiaryEntry(Base):
     purpose_of_meeting = Column(String(1000), nullable = False)
     jurisdiction = Column(String(50), nullable = False)
     import_file_name = Column(String(256), nullable = False)
+
+
+############################################################################
+#   LinkedIn Scraper
+############################################################################
+
+# class LinkedInProfileSearchTerms(Base):
+#     __tablename__ = "linkedin_profile_search_terms"
+
+#     def __init__(self, name, company, successful_google_query):
+#         self.name = name
+#         self.company = company
+#         self.successful_google_query = successful_google_query
+
+#     # ORM Database column mappings 
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String(1000), nullable=False)
+#     company = Column(String(1000), nullable=False)
+#     successful_google_query = Column(Boolean, nullable=False)
+
+class LinkedInProfileInfo(Base):
+    __tablename__ = "linkedin_profile_info"
+
+    def __init__(self, name, profile_title, sub_title, current_company, university, linkedin_url):
+        self.name = name
+        self.profile_title = profile_title
+        self.sub_title = sub_title
+        self.current_company = current_company
+        self.university = university
+        self.linkedin_url = linkedin_url
+                
+    # ORM Database column mappings 
+    id = Column(Integer, primary_key=True)
+    name = Column(String(1000), nullable=False)
+    profile_title = Column(String(1000), nullable=True)
+    sub_title = Column(String(1000), nullable=True)
+    current_company = Column(String(1000), nullable=True)
+    university = Column(String(1000), nullable=True)
+    linkedin_url = Column(String(10000), nullable=True)
+
+class LinkedInUserProfileWorkExperience(Base):
+    __tablename__ = "linkedin_user_work_experience"
+
+    def __init__(self, name, profile_id, company_name, role, duration, location, government_experience):
+        self.profile_id = profile_id
+        self.name = name
+        self.company_name = company_name
+        self.role = role
+        self.duration = duration
+        self.location = location
+        self.government_experience = government_experience
+                
+    # ORM Database column mappings 
+    id = Column(Integer, primary_key=True)
+    profile_id = Column(Integer, ForeignKey("linkedin_profile_info.id"), nullable=False)
+    name = Column(String(1000), nullable=False)
+    company_name = Column(String(1000), nullable=True)
+    role = Column(String(1000), nullable=True)
+    duration = Column(String(1000), nullable=True)
+    location = Column(String(1000), nullable=True)
+    government_experience = Column(Boolean, nullable=False)
+
+    profile = relationship("LinkedInProfileInfo", backref="linkedin_user_work_experience")
+
+class LinkedInUserProfileIdentification(Base):
+    __tablename__ = "linkedin_user_profile_identification"
+
+    def __init__(self, profile_id, name, correct_name, correct_company, worked_for_gov):
+        self.profile_id = profile_id
+        self.name = name
+        self.correct_name = correct_name
+        self.correct_company = correct_company
+        self.worked_for_gov = worked_for_gov
+                
+    # ORM Database column mappings 
+    id = Column(Integer, primary_key=True)
+    profile_id = Column(Integer, ForeignKey("linkedin_profile_info.id"), nullable=False)
+    name = Column(String(1000), nullable=False)
+    correct_name = Column(Boolean, nullable=False)
+    correct_company = Column(Boolean, nullable=False)
+    worked_for_gov = Column(Boolean, nullable=False)
+
+    profile = relationship("LinkedInProfileInfo", backref="linkedin_user_profile_identification")

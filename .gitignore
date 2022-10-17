@@ -2,11 +2,11 @@ venv/
 src/secrets/secrets.py
 *.db
 *.pyc
-*.xls*
 processed/
 *.csv
 *.pdf
 NSW_pdfs/
 *.log
-.DS_store
+*.DS_store
+*.DS_Store
 *.json
