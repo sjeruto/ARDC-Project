@@ -1,4 +1,4 @@
-from src.linkedin_scraper.Variables import my_username, my_password
+from src.linkedin_scraper.Variables import my_username, my_password, gov_keywords
 import json
 import os
 from fuzzywuzzy import fuzz
@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-from src.linkedin_scraper.LInkedInDatabase import *
+from src.model.models import *
 
 class LinkedInScraper:
     def __init__(self, name_search, company_search, driver, persist_to_db = True):
@@ -89,22 +89,21 @@ class LinkedInScraper:
         if not self.correct_company and self.getMatchingScoreForTwoTexts(company_name, self.company_search) >= 70:
             self.correct_company = True
 
-    def checkCompanyNameAndRoleAgainstGovtPositions(self, company_name, role):
-        gov_keywords = ['Parliament', 'Minister', 'NSW Government', 'Liberal Party', 'Labor Party', 'MP', 
-        'Federal Cabiner Minister', 'Federal Government', 'Department of Defence', 'Australian Government', 
-        'ACT Legislative Assembly', 'Office of the Treasurer', 'Office of Federal Health Minister', 
-        'NSW Opposition Leader', 'House of Representatives', 'Deputy Prime Minister', 'Ministerial offices', 
-        'Leader of the Opposition']
+    def checkCompanyNameAndRoleAgainstGovtPositions(self, company_name, role, duration):
+        gov_exp = False
         for gov_keys in gov_keywords:
             if gov_keys in company_name or gov_keys in role:
                 self.work_for_gov = True
                 gov_exp_dict = {
                     "CompanyName": company_name,
-                    "Role": role
+                    "Role": role,
+                    "Duration": duration
                 }
                 if gov_exp_dict != self.prev_gov_exp_dict:
                     self.gov_experience.append(gov_exp_dict)
-                self.prev_gov_exp_dict = gov_exp_dict
+                    self.prev_gov_exp_dict = gov_exp_dict
+                    gov_exp = True
+        return gov_exp
 
     def getExperiencesDictionary_ForMultipleRolesInCompany_InMainPage(self, i):
         sleep(2)
@@ -119,15 +118,24 @@ class LinkedInScraper:
             role_mult = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div[2]/ul/li[" + str(j+1) + "]/div/div[2]/div/a/div/span/span[1]")            
             duration_role = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div[2]/ul/li[" + str(j+1) + "]/div/div[2]/div/a/span[1]/span[1]")            
             location_role = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div[2]/ul/li[" + str(j+1) + "]/div/div[2]/div/a/span[2]/span[1]")            
-            self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role_mult)
+            gov_exp = self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role_mult, duration=duration_role)
             roles_dict = {
                 "Role": role_mult,
                 "Duration": duration_role,
                 "Location": location_role
             }
             list_roles.append(roles_dict)
-
-
+            linkedInUserProfileWorkExperience = LinkedInUserProfileWorkExperience(
+                profile_id = self.linkedInProfileInfo.id,
+                name = self.name,
+                company_name = company_name,
+                role = role_mult,
+                duration = duration_role,
+                location = location_role,
+                government_experience = gov_exp
+            )
+            if self.presist_to_db:
+                self.db_session.add(linkedInUserProfileWorkExperience)
         exp_dict = {
             "CompanyName": company_name,
             "Role": list_roles,
@@ -143,13 +151,24 @@ class LinkedInScraper:
         duration = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div/div[1]/span[2]/span[1]")        
         location = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div/div[1]/span[3]/span[1]")        
         role = self.extractElementText(locator="//*[text()='Experience']/../../../../../../descendant::div[6]/ul/li[" + str(i+1) + "]/div/div[2]/div[1]/div[1]/div/span/span[1]")
-        self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role)
+        gov_exp = self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role, duration=duration)
         exp_dict = {
             "CompanyName": company_name,
             "Role": role,
             "Duration": duration,
             "Location": location
         }
+        linkedInUserProfileWorkExperience = LinkedInUserProfileWorkExperience(
+            profile_id = self.linkedInProfileInfo.id,
+            name = self.name,
+            company_name = company_name,
+            role = role,
+            duration = duration,
+            location = location,
+            government_experience = gov_exp
+        )
+        if self.presist_to_db:
+            self.db_session.add(linkedInUserProfileWorkExperience)
         return exp_dict
 
     def scrapeExperienceSectionInMainPage(self):
@@ -178,14 +197,24 @@ class LinkedInScraper:
             role_mult = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]//div/div[2]/div[2]/ul/li/div/div/div[1]/ul/li[" + str(j+1) + "]/div/div[2]/div[1]/a/div/span/span[1]")
             duration_role = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]//div/div[2]/div[2]/ul/li/div/div/div[1]/ul/li[" + str(j+1) + "]/div/div[2]/div[1]/a/span[1]/span[1]")
             location_role = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]//div/div[2]/div[2]/ul/li/div/div/div[1]/ul/li[" + str(j+1) + "]/div/div[2]/div[1]/a/span[2]/span[1]")
-            self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role_mult)
+            gov_exp = self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role_mult, duration=duration_role)
             roles_dict = {
                 "Role": role_mult,
                 "Duration": duration_role,
                 "Location": location_role
             }
             list_roles.append(roles_dict)
-
+            linkedInUserProfileWorkExperience = LinkedInUserProfileWorkExperience(
+                profile_id = self.linkedInProfileInfo.id,
+                name = self.name,
+                company_name = company_name,
+                role = role_mult,
+                duration = duration_role,
+                location = location_role,
+                government_experience = gov_exp 
+            )
+            if self.presist_to_db:
+                self.db_session.add(linkedInUserProfileWorkExperience)
         exp_dict = {
             "CompanyName": company_name,
             "Role": list_roles,
@@ -201,13 +230,24 @@ class LinkedInScraper:
         role = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]/div/div[2]/div[1]/div[1]/div/span/span[1]")
         duration = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]/div/div[2]/div[1]/div[1]/span[2]/span[1]")
         location = self.extractElementText(locator="//*[text()='Experience']/../../../div[contains(@class,'pvs-list__container')]/div/div/ul/li[" + str(i+1) + "]/div/div[2]/div[1]/div[1]/span[3]/span[1]")
-        self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role)
+        gov_exp = self.checkCompanyNameAndRoleAgainstGovtPositions(company_name=company_name, role=role, duration=duration)
         exp_dict = {
             "CompanyName": company_name,
             "Role": role,
             "Duration": duration,
             "Location": location
         }
+        linkedInUserProfileWorkExperience = LinkedInUserProfileWorkExperience(
+            profile_id = self.linkedInProfileInfo.id,
+            name = self.name,
+            company_name = company_name,
+            role = role,
+            duration = duration,
+            location = location,
+            government_experience = gov_exp
+        )
+        if self.presist_to_db:
+            self.db_session.add(linkedInUserProfileWorkExperience)
         return exp_dict
 
     def scrapeAllExperiencesPage(self):
@@ -255,7 +295,6 @@ class LinkedInScraper:
                     "ProfilesScraped": []
                 }
             else:
-                list_dicts = []
                 self.correct_name = False
                 self.correct_company = False
                 self.work_for_gov = False
@@ -267,6 +306,17 @@ class LinkedInScraper:
                 self.name = main_profile_info["name"]
                 if self.getMatchingScoreForTwoTexts(main_profile_info["current_company"], self.company_search) >= 70:
                     self.correct_company = True
+                self.linkedInProfileInfo = LinkedInProfileInfo(
+                    name = main_profile_info["name"],
+                    profile_title = main_profile_info["profile_title"],
+                    sub_title = main_profile_info["sub_title"],
+                    current_company = main_profile_info["current_company"],
+                    university = main_profile_info["university"],
+                    linkedin_url = main_profile_info["linkedin_url"]
+                )
+                if self.presist_to_db:
+                    self.db_session.add(self.linkedInProfileInfo)
+                    self.db_session.commit()
                 try:
                     show_all_experiences = self.driver.find_element(By.XPATH, "//*[text()='Experience']/../../../../../../div[3]/div/div/a")
                     show_all_experiences_found = True
@@ -279,7 +329,10 @@ class LinkedInScraper:
                     list_experiences = self.scrapeAllExperiencesPage()
                 else:
                     list_experiences = self.scrapeExperienceSectionInMainPage()
-                output_dict = {
+                profiles_dict = {
+                    "NameSearched": self.name_search,
+                    "CompanySearched": self.company_search,
+                    "SuccessfulGoogleQuery": True,
                     "Name": main_profile_info["name"],
                     "ProfileTitle": main_profile_info["profile_title"],
                     "ProfileSubTitle": main_profile_info["sub_title"],
@@ -292,21 +345,16 @@ class LinkedInScraper:
                     "WorkedForGovernment": self.work_for_gov,
                     "GovernmentPositions": self.gov_experience
                 }
-                list_dicts.append(output_dict)
-                linkedin_data = LinkedInData(
-                    name_searched = self.name_search,
-                    company_searched = self.company_search,
-                    successful_google_query = True
+                linkedInUserProfileIdentification = LinkedInUserProfileIdentification(
+                    profile_id=self.linkedInProfileInfo.id,
+                    name=self.name,
+                    correct_company=self.correct_company,
+                    correct_name=self.correct_name,
+                    worked_for_gov=self.work_for_gov
                 )
                 if self.presist_to_db:
-                    self.db_session.add(linkedin_data)
+                    self.db_session.add(linkedInUserProfileIdentification)
                     self.db_session.commit()
-                profiles_dict = {
-                    "NameSearched": self.name_search,
-                    "CompanySearched": self.company_search,
-                    "SuccessfulGoogleQuery": True,
-                    "ProfilesScraped": list_dicts
-                }
             json_file.seek(os.stat(file_name).st_size -1)
             if i == 0:
                 json_file.write( "{}]".format(json.dumps(profiles_dict)))
