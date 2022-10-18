@@ -26,7 +26,7 @@ if __name__ == "__main__":
     companies_list = federal_employees_with_govt_exp["lobbyist_org_name"].to_list()
     
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    for i in range(1):
+    for i in range(len(names_list)):
         scraper = LinkedInScraper(name_search=names_list[i], company_search=companies_list[i], driver=driver)
         if i == 0:
             scraper.linkedInLogin()
