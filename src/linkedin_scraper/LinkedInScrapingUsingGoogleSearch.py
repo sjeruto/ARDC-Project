@@ -1,5 +1,4 @@
 import sqlite3
-import json
 import datetime
 from time import sleep
 from src.linkedin_scraper.GoogleSearch import GoogleSearchForLinkedInUrls
@@ -26,10 +25,8 @@ if __name__ == "__main__":
     names_list = federal_employees_with_govt_exp["lobbyist_name_clean"].to_list()
     companies_list = federal_employees_with_govt_exp["lobbyist_org_name"].to_list()
     
-    with open(file_name, "w") as json_file:
-        json.dump([], json_file)
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    for i in range(len(names_list)):
+    for i in range(1):
         scraper = LinkedInScraper(name_search=names_list[i], company_search=companies_list[i], driver=driver)
         if i == 0:
             scraper.linkedInLogin()

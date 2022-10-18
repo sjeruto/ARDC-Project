@@ -29,6 +29,7 @@ if __name__ == "__main__":
             if i == 0:
                 scraper.linkedInLogin()
             print(df.loc[i, "Profile_Urls"])
+            sleep(30)
             scraper.scrapeProfileInfo(i=i, file_name=file_name, profile=df.loc[i, "Profile_Urls"])
             sleep(2)
             sleep(2)
