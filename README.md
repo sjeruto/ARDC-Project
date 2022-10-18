@@ -2,7 +2,7 @@
 This is a repository for ilab2 group project which is an exploratory research on the influence of lobbyist organisations in policy making in Australia. The aim of the project is to link different datasets together.
 
 ## Project Description
-The repository contaains working web scrapers collected from various states (NSW, SA, Queensland and Federal state). These are 
+The repository contains working web scrapers collected from various states (NSW, SA, Queensland and Federal state). These are 
 1. LinkedIn Scraper
 2. Political donations scraper
 3. Lobbyist registers scrapers
@@ -200,7 +200,7 @@ The LinkedInDataService class contains all the methods that query the tables con
    # gets all the lobbyist employees along with their work experience scraped from linkedin
    lobbyist_employee_with_experience = linkedInDataService.get_all_lobbyist_employees_with_work_experience()
 ```
-Much like the LobbyistDataService class, the LinkedInDataService class needs to be instantiated with a database connection object. In the above example, a sqlite3 connection is passed to the LinkedInDataService class. The database connection was created beforehand by passing the path to the data.db file. In this case, a relative path was passed as the data.db file was stored in the root directory of the project
+Much like the LobbyistDataService class, the LinkedInDataService class needs to be instantiated with a database connection object. In the above example, a sqlite3 connection is passed to the LinkedInDataService class. The database connection was created beforehand by passing the path to the data.db file. In this case, a relative path was passed as the data.db file was stored in the root directory of the project.
 
 ## Political Donations Scraper
 The Political Donations scraper scrapes the donations data from the [New South Wales Electoral Commission website](https://searchdecs.elections.nsw.gov.au/search.aspx) and the [Northern Territory Electoral Commission website](https://ntec.nt.gov.au/financial-disclosure/financial-disclosure-returns-legislative-assembly/annual-returns2/2019-2020-annual-returns) and then outputs the data into csv files. Below is an example of how to use the scrapers:
