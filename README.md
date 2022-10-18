@@ -189,6 +189,55 @@ The LinkedIn scraper takes an input of the lobbyist employees' name, organisatio
     ```
     Source: https://github.com/SergeyPirogov/webdriver_manager/pull/445
     
+Another version of the LinkedIn scraper can be run by retrieving the lobbyist employee names and their organisation names using Lobbyist Data Service and then running the LinkedIn scraper. The scraper would at first search for the linkedin profiles of those employees using google search and once found, scrape those profiles to see if they had previous government experience. Below is an example of its usage:
+```python
+   import sqlite3
+   from src.linkedin_scraper.GoogleSearch import GoogleSearchForLinkedInUrls
+   from src.services.LobbyistService import LobbyistDataService
+   from webdriver_manager.chrome import ChromeDriverManager
+   from src.linkedin_scraper.LinkedInScraper import LinkedInScraper
+   from selenium import webdriver
+   from selenium.webdriver.chrome.service import Service
+   from src.services.LinkedInDataService import LinkedInDataService
+   
+   # Create a database connection by passing the path to the data.db file
+   # Ensure the database has data about all the required lobbyist employees from the lobbyist register
+   cnx = sqlite3.connect('data.db')
+   # Pass the database connection object as an argument
+   lobbyistDataService = LobbyistDataService(cnx)
+   # Get all the unique Federal lobbyist employees
+   unique_federal_employees = lobbyistDataService.get_unique_federal_lobbyist_employees()
+   # Get all the lobbyist organisations
+   unique_lobbyist_orgs_df = lobbyistDataService.get_unique_lobbyist_abns()
+   # Join the lobbyist employees with the lobbyist organsiations to find the organisation names of the lobbyist employees
+   federal_employees_org = unique_federal_employees.merge(unique_lobbyist_orgs_df, left_on='lobbyist_abn_clean', right_on='abn_clean')
+   # Select only those lobbyists that had disclosed themseleves to be former government representatives
+   federal_employees_with_govt_exp = federal_employees_org.query("former_govt_representative=='Yes'")
+   # Create an instance of the ChromeWebDriver
+   driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+   for i in range(len(names_list)):
+       # Create an instance of the LinkedInScraper by passing the lobbyist employee names, organisation names and webdriver
+       scraper = LinkedInScraper(name_search=names_list[i], company_search=companies_list[i], driver=driver)
+       if i == 0:
+           # Log in to LinkedIn
+           scraper.linkedInLogin()
+       # Look for the linkedin profile urls via google search
+       googleSearch = GoogleSearchForLinkedInUrls(name_search=names_list[i], company_search=companies_list[i], driver=driver)
+       googleSearch.googleQuery()
+       # Retrieve the linkedin profile urls
+       profile = googleSearch.getlinkedInProfileUrls()
+       # Pass the linkedin profile urls to the LinkedInScraper to scrape those profiles
+       scraper.scrapeProfileInfo(i=i, file_name=file_name, profile=profile)
+   # Create an instance of the LinkedInDataService class by passing the database connection object    
+   linkedInDataService = LinkedInDataService(cnx)
+   # get all the lobbyist employees along with their work experience scraped from linkedin
+   lobbyist_employee_with_experience = linkedInDataService.get_all_lobbyist_employees_with_work_experience()
+   # Write to a csv file
+   lobbyist_employee_with_experience.to_csv("employees_experience.csv", index=False)
+   driver.quit()
+```
+This particular example retrieves all the federal lobbyists who had disclosed themselves as former government representatives and looks for their linkedin profiles via google search and then scrapes those profiles to retrieve information about their work history.
+    
  ## LinkedIn Data Service
 The LinkedInDataService class contains all the methods that query the tables containing the LinkedIn data scraped by the LinkedIn scraper. Below is an example of its usage:
 ```python
@@ -197,7 +246,7 @@ The LinkedInDataService class contains all the methods that query the tables con
    # pass the path to data.db file
    cnx = sqlite3.connect('../data.db')
    linkedInDataService = LinkedInDataService(cnx)
-   # gets all the lobbyist employees along with their work experience scraped from linkedin
+   # get all the lobbyist employees along with their work experience scraped from linkedin
    lobbyist_employee_with_experience = linkedInDataService.get_all_lobbyist_employees_with_work_experience()
 ```
 Much like the LobbyistDataService class, the LinkedInDataService class needs to be instantiated with a database connection object. In the above example, a sqlite3 connection is passed to the LinkedInDataService class. The database connection was created beforehand by passing the path to the data.db file. In this case, a relative path was passed as the data.db file was stored in the root directory of the project.
