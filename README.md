@@ -215,4 +215,4 @@ The Political Donations scraper scrapes the donations data from the [New South W
    # Closes the browser
    scraper.browserClose()
 ```
-The DonationsScraper.py file in the `/src` directory contains the code to run the donations scrapers.
+The `DonationsScraper.py` file in the `/src` directory contains the code to run the donations scrapers.
