@@ -145,7 +145,7 @@ mining_companies_associated_with_diaries = search.get_mining_companies_linked_to
  
 
 ## LinkedIn scraper
-The LinkedIn scraper takes an input of the lobbyist employees' name, organisation and linkedin profile urls and scrapes those profiles and persists the data into the database
+The LinkedIn scraper takes an input of the lobbyist employees' name, organisation and linkedin profile urls and scrapes those profiles and persists the data into the database.
 #### Instructions to run the LinkedIn scraper
 - Locate the `ProfileUrls.xlsx` file in the root directory and open it
 - Insert the lobbyist employees' name, organisation name and the linkedin profile url
@@ -158,7 +158,7 @@ The LinkedIn scraper takes an input of the lobbyist employees' name, organisatio
     - the data can also be viewed in the database by opening the `data.db` file
 
 #### Changing the credentials of the LinkedIn user with which the data is scraped
-- Navigate to the `Variables.py` in the `/src/linkedin_scraper/` directory
+- Navigate to the `Variables.py` in the `/src/linkedin_scraper` directory
 - Open the file and enter the credentials of the new user in the following variables
     ```python
     my_username = "tsim12345679@gmail.com"
@@ -168,7 +168,7 @@ The LinkedIn scraper takes an input of the lobbyist employees' name, organisatio
 
 
 #### Adding keywords with which the scraper looks for government experience
-- Navigate to the `Variables.py` in the `/src/linkedin_scraper/` directory
+- Navigate to the `Variables.py` in the `/src/linkedin_scraper` directory
 - Open the file and add keywords to list of keywords in the following variable:
     ```python
     gov_keywords
@@ -188,3 +188,31 @@ The LinkedIn scraper takes an input of the lobbyist employees' name, organisatio
         return "mac_arm64"
     ```
     Source: https://github.com/SergeyPirogov/webdriver_manager/pull/445
+    
+ ## LinkedIn Data Service
+The LinkedInDataService class contains all the methods that query the tables containing the LinkedIn data scraped by the LinkedIn scraper. Below is an example of its usage:
+```python
+   import sqlite3
+   from src.services.LinkedInDataService import LinkedInDataService
+   # pass the path to data.db file
+   cnx = sqlite3.connect('../data.db')
+   linkedInDataService = LinkedInDataService(cnx)
+   # gets all the lobbyist employees along with their work experience scraped from linkedin
+   lobbyist_employee_with_experience = linkedInDataService.get_all_lobbyist_employees_with_work_experience()
+```
+Much like the LobbyistDataService class, the LinkedInDataService class needs to be instantiated with a database connection object. In the above example, a sqlite3 connection is passed to the LinkedInDataService class. The database connection was created beforehand by passing the path to the data.db file. In this case, a relative path was passed as the data.db file was stored in the root directory of the project
+
+## Political Donations Scraper
+The Political Donations scraper scrapes the donations data from the [New South Wales Electoral Commission website](https://searchdecs.elections.nsw.gov.au/search.aspx) and the [Northern Territory Electoral Commission website](https://ntec.nt.gov.au/financial-disclosure/financial-disclosure-returns-legislative-assembly/annual-returns2/2019-2020-annual-returns) and then outputs the data into csv files. Below is an example of how to use the scrapers:
+```python
+   from scrappers.DonationsNswScraper import *
+   # Instatiates the DonationsNswScraper class
+   scraper = DonationsNswScraper()
+   # Creates a list of all the donors
+   scraper.listAllDonors()
+   # Retrieves the data about all the donors and outputs it into a csv
+   scraper.retrieveInfoAboutDonors()
+   # Closes the browser
+   scraper.browserClose()
+```
+The DonationsScraper.py file in the `/src` directory contains the code to run the donations scrapers.
