@@ -265,3 +265,15 @@ The Political Donations scraper scrapes the donations data from the [New South W
    scraper.browserClose()
 ```
 The `DonationsScraper.py` file in the `/src` directory contains the code to run the donations scrapers.
+
+
+
+## News tool
+
+The News tool takes a mandatory input 'query_keywords ' and allows you to choose additional filters
+
+#### Instructions to run the LinkedIn scraper
+- Open the notebook
+- Set query term and filters
+- Run the whole notebook
+- See plots and dataframe.
